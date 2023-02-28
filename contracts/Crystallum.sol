@@ -4,35 +4,7 @@
 pragma solidity ^0.8.0;
 
 import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-
-//Library PriceConverter to convert usd to eth and eth to usd
-
-library PriceConverter {
-    function getPrice(
-        AggregatorV3Interface priceFeed
-    ) internal view returns (uint256) {
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
-        return uint256(answer * 10000000000);
-    }
-
-    function ethToUsd(
-        uint256 ethAmount,
-        AggregatorV3Interface priceFeed
-    ) internal view returns (uint256) {
-        uint256 ethPrice = getPrice(priceFeed);
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
-        return ethAmountInUsd;
-    }
-
-    function usdToEth(
-        uint usdAmount,
-        AggregatorV3Interface priceFeed
-    ) internal view returns (uint256) {
-        uint256 ethPrice = getPrice(priceFeed);
-        uint256 usdAmountInEth = (usdAmount / ethPrice) * 1000000000000000000;
-        return usdAmountInEth;
-    }
-}
+import "./PriceConverter.sol";
 
 contract Crystallum {
     using PriceConverter for uint256;
@@ -61,7 +33,7 @@ contract Crystallum {
         fundContract();
     }
 
-    function setBottles(uint256 _numberOfBottles) private {
+    function setBottles(uint256 _numberOfBottles) public {
         s_accountToNumberOfBottles[payable(msg.sender)] += _numberOfBottles;
     }
 
@@ -81,12 +53,14 @@ contract Crystallum {
 
     function fundContract() public payable {}
 
-    function send(address payable _to) external payable {
+    function send(address payable _to) public payable {
         require(_to != address(0), "Adresse invalide");
 
         require(msg.value > 0, "Montant insuffisant");
 
         _to.transfer(msg.value);
+
+        s_accountToBalance[msg.sender] -= msg.value;
     }
 
     function getOwner() public view returns (address) {

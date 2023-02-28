@@ -17,6 +17,12 @@ module.exports = {
       chainId: 5,
       blockConfirmations: 6,
     },
+    mumbai: {
+      url: process.env.MUMBAI_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 80001,
+      blockConfirmations: 6,
+    },
   },
   solidity: {
     compilers: [
