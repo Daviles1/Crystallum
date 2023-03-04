@@ -37,31 +37,33 @@ contract Crystallum {
         s_accountToNumberOfBottles[payable(msg.sender)] += _numberOfBottles;
     }
 
-    function retrieve() public {
+    function retrieve() public payable {
         require(
             s_accountToNumberOfBottles[msg.sender] > 0,
             "You have no bottles to retrieve"
         );
-        uint256 amount = (s_accountToNumberOfBottles[payable(msg.sender)] *
-            PRICE_BOTTLE) / 10 ** 18;
-        amount = amount.usdToEth(s_priceFeed);
-        bool sendSuccess = payable(msg.sender).send(amount);
-        require(sendSuccess, "Send failed");
+        uint256 amount = (s_accountToNumberOfBottles[msg.sender] *
+            PRICE_BOTTLE);
+        amount = PriceConverter.usdToEth(amount /*, s_priceFeed**/);
+        require(
+            address(this).balance >= amount,
+            "Not enough balance to transfer"
+        );
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Failing to send ether");
         s_accountToBalance[msg.sender] += amount;
         s_accountToNumberOfBottles[msg.sender] = 0;
     }
 
     function fundContract() public payable {}
 
-    function send(address payable _to) public payable {
-        require(_to != address(0), "Adresse invalide");
+    // function send(address payable _to) public payable {
+    //     require(_to != address(0), "Adresse invalide");
 
-        require(msg.value > 0, "Montant insuffisant");
+    //     _to.transfer(msg.value);
 
-        _to.transfer(msg.value);
-
-        s_accountToBalance[msg.sender] -= msg.value;
-    }
+    //     s_accountToBalance[msg.sender] -= msg.value;
+    // }
 
     function getOwner() public view returns (address) {
         return i_owner;
