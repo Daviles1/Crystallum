@@ -1,5 +1,6 @@
 const { ethers, getNamedAccounts } = require("hardhat");
 
+//Fonction qui appelle la fonction "retrieve" du contrat
 async function main() {
   const { deployer } = await getNamedAccounts();
   const crystallum = await ethers.getContract("Crystallum", deployer);

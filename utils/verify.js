@@ -1,4 +1,4 @@
-//Piece of code to verify the contract on Ehterscna
+//Code pour vérifier le contrat sur Etherscan
 
 const { run } = require("hardhat");
 

@@ -1,4 +1,4 @@
-//Deploying the contract on the local blockchain or on a real testnet
+//Déployer le contrat sur une vraie blockchain de test comme Goerli
 
 const { network } = require("hardhat");
 const {

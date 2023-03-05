@@ -1,4 +1,4 @@
-//Deploying the mock contract on the local development blockchain (hardhat)
+//Déployer le contrat mock sur la blockchain de test localchost hardhat
 
 const { network } = require("hardhat");
 

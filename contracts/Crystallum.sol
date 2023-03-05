@@ -3,23 +3,30 @@
 
 pragma solidity ^0.8.0;
 
+//Imports de la libraire et de l'oracle permettant de récupérer le prix actuel de l'Ether
 import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./PriceConverter.sol";
 
 contract Crystallum {
     using PriceConverter for uint256;
 
+    //Prix de la bouteille: 10 centimes
     uint256 public constant PRICE_BOTTLE = 0.1 * 10 ** 18;
+    //Adresse du propriétaire du contrat
     address private immutable i_owner;
+    //Fonctions permettant de lier un wallet à un montant et un wallet à son nombre de bouteilles
     mapping(address => uint256) private s_accountToBalance;
     mapping(address => uint256) private s_accountToNumberOfBottles;
+    //Créer le contrat avec l'oracle de Chainlink
     AggregatorV3Interface private s_priceFeed;
 
+    //Condition pour que seul le propriétaire du contrat peut appeler la fonction
     modifier onlyOwner() {
         require(msg.sender == i_owner, "You are not the owner");
         _;
     }
 
+    //Définit le propriétaire du contrat et l'adresse du contrat Chainlink, tout ca dès le déploiement du contrat Crystallum
     constructor(address priceFeed) {
         i_owner = msg.sender;
         s_priceFeed = AggregatorV3Interface(priceFeed);
@@ -33,30 +40,39 @@ contract Crystallum {
         fundContract();
     }
 
+    //Fonction permettant de définir le nombre de bouteilles placées dans la machine pour un utilisateur
     function setBottles(uint256 _numberOfBottles) public {
         s_accountToNumberOfBottles[payable(msg.sender)] += _numberOfBottles;
     }
 
+    //Fonction permettant de retirer l'Ether en fonction du nombre de bouteilles qu'on a placées dans la machine
     function retrieve() public payable {
+        //Vérifie si l'utilisateur a bien placé des bouteilles dans la machine
         require(
             s_accountToNumberOfBottles[msg.sender] > 0,
             "You have no bottles to retrieve"
         );
+        //Définit le montant en dollars à récupérer
         uint256 amount = (s_accountToNumberOfBottles[msg.sender] *
             PRICE_BOTTLE);
+        //Définit le montant en Ether à récupérer (ne marche pas pour l'instant car le contrat de Chainlink est off)
         amount = PriceConverter.usdToEth(amount /*, s_priceFeed**/);
+        //Vérifie que le montant requis est inférieur aux fonds du contrat
         require(
             address(this).balance >= amount,
             "Not enough balance to transfer"
         );
+        //Envoie l'Ether à l'utilisateur
         (bool success, ) = msg.sender.call{value: amount}("");
         require(success, "Failing to send ether");
         s_accountToBalance[msg.sender] += amount;
+        //Remet le compteur de l'utilisateur à zéro
         s_accountToNumberOfBottles[msg.sender] = 0;
     }
 
     function fundContract() public payable {}
 
+    //Fonction Send qui ne marche pas, à chercher
     // function send(address payable _to) public payable {
     //     require(_to != address(0), "Adresse invalide");
 
@@ -65,14 +81,17 @@ contract Crystallum {
     //     s_accountToBalance[msg.sender] -= msg.value;
     // }
 
+    //Fonction qui récupère l'adresse du propriétaire
     function getOwner() public view returns (address) {
         return i_owner;
     }
 
+    //Fonction qui récupère le montant du wallet de l'utilisateur en fonction du nombre de bouteilles placées
     function getBalance(address _address) public view returns (uint256) {
         return s_accountToBalance[_address];
     }
 
+    //Fonction qui récupère le nombre de bouteilles placées pour un utilisateur
     function getNumberOfBottles(
         address _address
     ) public view returns (uint256) {

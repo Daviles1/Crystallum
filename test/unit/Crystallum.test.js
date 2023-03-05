@@ -1,3 +1,5 @@
+//Code permettant de tester le contrat pour voir si il marche bien
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 

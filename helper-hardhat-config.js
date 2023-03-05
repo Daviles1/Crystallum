@@ -1,4 +1,4 @@
-//Configuration of networks: localhost ad goerli
+//Configuration des réseaux: localhost, goerli et mumbai
 
 const networkConfig = {
   31337: {
