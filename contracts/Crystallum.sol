@@ -4,7 +4,7 @@
 pragma solidity ^0.8.0;
 
 //Imports de la libraire et de l'oracle permettant de récupérer le prix actuel de l'Ether
-import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./PriceConverter.sol";
 
 contract Crystallum {
@@ -72,14 +72,15 @@ contract Crystallum {
 
     function fundContract() public payable {}
 
-    //Fonction Send qui ne marche pas, à chercher
-    // function send(address payable _to) public payable {
-    //     require(_to != address(0), "Adresse invalide");
+    //Fonction qui permet d'envoyer de l'Ether entre différentes adresses
+    function send(address payable _to) public payable {
+        require(_to != address(0), "Adresse invalide");
 
-    //     _to.transfer(msg.value);
+        _to.transfer(msg.value);
 
-    //     s_accountToBalance[msg.sender] -= msg.value;
-    // }
+        s_accountToBalance[msg.sender] -= msg.value;
+        s_accountToBalance[_to] += msg.value;
+    }
 
     //Fonction qui récupère l'adresse du propriétaire
     function getOwner() public view returns (address) {

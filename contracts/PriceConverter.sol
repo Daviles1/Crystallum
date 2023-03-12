@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 library PriceConverter {
     //Fonction qui permet de récupérer le prix de l'Ether (ne marche pas pour l'instant à cause de l'oracle Chainlink)

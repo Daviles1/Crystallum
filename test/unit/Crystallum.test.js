@@ -94,60 +94,43 @@ describe("Crystallum", function () {
     });
   });
 
-  // describe("Send", function () {
-  //   beforeEach(async function () {
-  //     const amount = ethers.utils.parseEther("10");
-  //     await crystallum.send(addr1.address, { value: amount });
-  //   });
-  //   it("should allow users to send ETH to other addresses", async function () {
-  //     const initialBalance = await addr1.getBalance();
-  //     const transactionResponse = await crystallum.send(addr1.address, {
-  //       value: amount,
-  //     });
-  //     const transactionReceipt = await transactionResponse.wait();
-  //     const newBalance = await addr1.getBalance();
-  //     const expectedBalance = initialBalance.add(amount);
-  //     expect(newBalance).to.equal(expectedBalance);
-  //   });
+  describe("Send", function () {
+    beforeEach(async function () {
+      const amount = ethers.utils.parseEther("1");
+      await crystallum.fundContract({
+        value: amount,
+      });
+      await crystallum.setBottles(10000);
+      await crystallum.retrieve();
+    });
+    it("should allow users to send ETH to other addresses", async function () {
+      const amount = ethers.utils.parseEther("0.1");
+      const initialBalanceAddr1 = await addr1.getBalance();
+      const initialBalanceOwner = await owner.getBalance();
 
-  //   it("should not allow users to send ETH to invalid addresses", async function () {
-  //     await expect(
-  //       crystallum.send("0x0000000000000000000000000000000000000000", {
-  //         value: ethers.utils.parseEther("1"),
-  //       })
-  //     ).to.be.revertedWith("Adresse invalide");
-  //   });
-  //   it("should send ETH to another address and update balances", async function () {
-  //     const initialSenderBalance = await ethers.provider.getBalance(
-  //       addr1.address
-  //     );
-  //     const initialRecipientBalance = await ethers.provider.getBalance(
-  //       addr2.address
-  //     );
+      const transactionResponse = await crystallum.send(addr1.address, {
+        value: amount,
+      });
+      const transactionReceipt = await transactionResponse.wait();
+      const { gasUsed, effectiveGasPrice } = transactionReceipt;
+      const gasCost = gasUsed.mul(effectiveGasPrice);
 
-  //     const value = ethers.utils.parseEther("1");
-  //     await crystallum.fundContract({ value: value });
+      const newBalanceAddr1 = await addr1.getBalance();
+      const newBalanceOwner = await owner.getBalance();
 
-  //     const recipient = addr2.address;
-  //     const senderBalanceBefore = await ethers.provider.getBalance(
-  //       crystallum.address
-  //     );
-  //     const tx = await crystallum.send(recipient, { value: value });
-  //     const senderBalanceAfter = await ethers.provider.getBalance(
-  //       crystallum.address
-  //     );
+      const expectedBalanceAddr1 = initialBalanceAddr1.add(amount);
+      const expectedBalanceOwner = initialBalanceOwner.sub(amount).sub(gasCost);
 
-  //     const expectedSenderBalance = initialSenderBalance.sub(value);
-  //     const expectedRecipientBalance = initialRecipientBalance.add(value);
-  //     const actualSenderBalance = senderBalanceBefore
-  //       .sub(senderBalanceAfter)
-  //       .add(value);
-  //     const actualRecipientBalance = await ethers.provider.getBalance(
-  //       recipient
-  //     );
+      expect(newBalanceAddr1).to.equal(expectedBalanceAddr1);
+      expect(newBalanceOwner).to.equal(expectedBalanceOwner);
+    });
 
-  //     expect(actualSenderBalance).to.equal(expectedSenderBalance);
-  //     expect(actualRecipientBalance).to.equal(expectedRecipientBalance);
-  //   });
-  // });
+    it("should not allow users to send ETH to invalid addresses", async function () {
+      await expect(
+        crystallum.send("0x0000000000000000000000000000000000000000", {
+          value: ethers.utils.parseEther("1"),
+        })
+      ).to.be.revertedWith("Adresse invalide");
+    });
+  });
 });
